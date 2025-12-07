@@ -29,13 +29,18 @@ def academic_info_submit(gpa_str, current_courses):
         return "Please submit user information first.", gr.update(visible=True), gr.update(visible=False)
     
     if not validate_gpa(gpa_str):
-        return "Invalid GPA. Please enter a value between 0.0 and 4.0.", gr.update(visible=True), gr.update(visible=False)
+        gr.Warning('Invalid GPA. Please enter a value between 0.0 and 4.0.')
+        return "", gr.update(visible=True), gr.update(visible=False), gr.update(visible=False)
     
     current_user.gpa = float(gpa_str)
     current_user.courses = current_courses
+
+    if len(current_user.courses) < 5:
+        gr.Warning('Please Provide at least 5 previous courses.')
+        return "", gr.update(visible=True), gr.update(visible=False), gr.update(visible=False)
     
     recommendations = get_recommendations(current_user)
-    
+
     confirmation_message = f"""
     **User Information:**
     Name: {current_user.first_name} {current_user.last_name}
