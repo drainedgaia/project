@@ -1,5 +1,5 @@
 import gradio as gr
-from src.data.models import User, Course
+from src.data.models import User
 from src.utils.validation import validate_email, validate_gpa
 from src.logic.recommender import get_recommendations
 
@@ -8,50 +8,75 @@ current_user = None
 def user_info_submit(first_name, last_name, email):
     global current_user
     if not first_name or not last_name or not email:
-        return "Please fill in all fields.", gr.update(visible=True), gr.update(visible=False)
+        gr.Warning("Please fill in all fields.")
+        return gr.update(visible=True), gr.update(visible=False)
     if not validate_email(email):
-        return "Invalid email format.", gr.update(visible=True), gr.update(visible=False)
+        gr.Warning("Invalid email format.")
+        return gr.update(visible=True), gr.update(visible=False)
     
-    current_user = User(first_name, last_name, email, 1.9, [])
-    return "User info submitted successfully!", gr.update(visible=False), gr.update(visible=True)
+    current_user = User(first_name, last_name, email, 0.0, [])
+    return gr.update(visible=False), gr.update(visible=True)
 
-def add_course(course_name, course_grade, current_courses):
-    if not course_name or not course_grade:
-        return current_courses, "Please enter both course name and grade.", gr.update(value=""), gr.update(value="")
-    
-    current_courses.append(Course(course_name, course_grade))
-    course_list_str = "Added Courses:\n" + "\n".join([f"- {c.name}: {c.grade}" for c in current_courses])
-    return current_courses, course_list_str, gr.update(value=""), gr.update(value="")
-
-def academic_info_submit(gpa_str, current_courses):
+def academic_info_submit(
+    gpa_str, age, gender, ethnicity, parental_education, study_time_weekly, 
+    absences, tutoring, parental_support, extracurricular, sports, music, volunteering
+):
     global current_user
     if not current_user:
-        return "Please submit user information first.", gr.update(visible=True), gr.update(visible=False)
+        gr.Warning("Please submit user information first.")
+        return "", "", gr.update(visible=True), gr.update(visible=False)
     
     if not validate_gpa(gpa_str):
         gr.Warning('Invalid GPA. Please enter a value between 0.0 and 4.0.')
-        return "", gr.update(visible=True), gr.update(visible=False), gr.update(visible=False)
+        return "", "", gr.update(visible=True), gr.update(visible=False)
     
     current_user.gpa = float(gpa_str)
-    current_user.courses = current_courses
 
-    if len(current_user.courses) < 5:
-        gr.Warning('Please Provide at least 5 previous courses.')
-        return "", gr.update(visible=True), gr.update(visible=False), gr.update(visible=False)
-    
-    recommendations = get_recommendations(current_user)
+    # Convert inputs to the correct types
+    try:
+        age = int(age)
+        gender = int(gender)
+        ethnicity = int(ethnicity)
+        parental_education = int(parental_education)
+        study_time_weekly = float(study_time_weekly)
+        absences = int(absences)
+        tutoring = int(tutoring)
+        parental_support = int(parental_support)
+        extracurricular = int(extracurricular)
+        sports = int(sports)
+        music = int(music)
+        volunteering = int(volunteering)
+    except (ValueError, TypeError):
+        gr.Warning("Please ensure all fields are filled correctly.")
+        return "", "", gr.update(visible=True), gr.update(visible=False)
+
+    recommendations = get_recommendations(
+        age=age,
+        gender=gender,
+        ethnicity=ethnicity,
+        parental_education=parental_education,
+        study_time_weekly=study_time_weekly,
+        absences=absences,
+        tutoring=tutoring,
+        parental_support=parental_support,
+        extracurricular=extracurricular,
+        sports=sports,
+        music=music,
+        volunteering=volunteering,
+        gpa=current_user.gpa,
+    )
 
     confirmation_message = f"""
     **User Information:**
     Name: {current_user.first_name} {current_user.last_name}
     Email: {current_user.email}
 
-    **Academic Information:**
+    **Academic & Personal Information:**
     GPA: {current_user.gpa}
-    Courses:
+    Age: {age}
+    Study Time Weekly: {study_time_weekly} hours
+    Absences: {absences} days
     """
-    for course in current_user.courses:
-        confirmation_message += f"- {course.name}: {course.grade}\n"
     
     recommendation_message = "\n**Recommended Courses:**\n" + "\n".join([f"- {rec}" for rec in recommendations])
 
@@ -60,29 +85,37 @@ def academic_info_submit(gpa_str, current_courses):
 with gr.Blocks() as app:
     gr.Markdown("# Student Recommendation System")
 
-    # State to store courses
-    courses_state = gr.State([])
-
     with gr.Column(visible=True) as user_info_page:
         gr.Markdown("## 1. User Information")
         first_name_input = gr.Textbox(label="First Name")
         last_name_input = gr.Textbox(label="Last Name")
         email_input = gr.Textbox(label="Email")
-        user_info_output = gr.Textbox(label="Status", interactive=False)
         user_info_button = gr.Button("Next")
 
     with gr.Column(visible=False) as academic_info_page:
-        gr.Markdown("## 2. Academic Information")
-        gpa_input = gr.Textbox(label="Previous GPA (0.0-4.0)")
+        gr.Markdown("## 2. Academic and Personal Information")
         
-        gr.Markdown("### Add Courses")
         with gr.Row():
-            course_name_input = gr.Textbox(label="Course Name")
-            course_grade_input = gr.Textbox(label="Course Grade")
-            add_course_button = gr.Button("Add Course")
+            gpa_input = gr.Number(label="Previous GPA (0.0-4.0)", value=3.0)
+            age_input = gr.Number(label="Age", value=16)
+            study_time_weekly_input = gr.Slider(label="Study Time Weekly (hours)", minimum=0, maximum=20, value=10)
         
-        added_courses_display = gr.Markdown("Added Courses:")
-        academic_info_output = gr.Textbox(label="Status", interactive=False)
+        with gr.Row():
+            absences_input = gr.Slider(label="Absences (days)", minimum=0, maximum=30, value=5)
+            parental_education_input = gr.Radio(label="Parental Education", choices=[("None", 0), ("High School", 1), ("Some College", 2), ("Bachelor's", 3), ("Higher", 4)], value=2)
+            parental_support_input = gr.Radio(label="Parental Support", choices=[("None", 0), ("Low", 1), ("Moderate", 2), ("High", 3), ("Very High", 4)], value=2)
+
+        with gr.Row():
+            gender_input = gr.Radio(label="Gender", choices=[("Female", 0), ("Male", 1)], value=0)
+            ethnicity_input = gr.Radio(label="Ethnicity", choices=[("Caucasian", 0), ("African American", 1), ("Asian", 2), ("Other", 3)], value=0)
+            tutoring_input = gr.Radio(label="Tutoring", choices=[("No", 0), ("Yes", 1)], value=0)
+
+        with gr.Row():
+            extracurricular_input = gr.Radio(label="Extracurricular Activities", choices=[("No", 0), ("Yes", 1)], value=0)
+            sports_input = gr.Radio(label="Sports", choices=[("No", 0), ("Yes", 1)], value=0)
+            music_input = gr.Radio(label="Music", choices=[("No", 0), ("Yes", 1)], value=0)
+            volunteering_input = gr.Radio(label="Volunteering", choices=[("No", 0), ("Yes", 1)], value=0)
+
         academic_info_button = gr.Button("Submit")
 
     with gr.Column(visible=False) as recommendation_page:
@@ -93,18 +126,16 @@ with gr.Blocks() as app:
     user_info_button.click(
         user_info_submit,
         inputs=[first_name_input, last_name_input, email_input],
-        outputs=[user_info_output, user_info_page, academic_info_page]
-    )
-
-    add_course_button.click(
-        add_course,
-        inputs=[course_name_input, course_grade_input, courses_state],
-        outputs=[courses_state, added_courses_display, course_name_input, course_grade_input]
+        outputs=[user_info_page, academic_info_page]
     )
 
     academic_info_button.click(
         academic_info_submit,
-        inputs=[gpa_input, courses_state],
+        inputs=[
+            gpa_input, age_input, gender_input, ethnicity_input, parental_education_input,
+            study_time_weekly_input, absences_input, tutoring_input, parental_support_input,
+            extracurricular_input, sports_input, music_input, volunteering_input
+        ],
         outputs=[confirmation_display, recommendation_display, academic_info_page, recommendation_page]
     )
 
