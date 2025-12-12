@@ -12,7 +12,7 @@ def user_info_submit(first_name, last_name, email):
     if not validate_email(email):
         return "Invalid email format.", gr.update(visible=True), gr.update(visible=False)
     
-    current_user = User(first_name, last_name, email)
+    current_user = User(first_name, last_name, email, 1.9, [])
     return "User info submitted successfully!", gr.update(visible=False), gr.update(visible=True)
 
 def add_course(course_name, course_grade, current_courses):
