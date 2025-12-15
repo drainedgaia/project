@@ -46,7 +46,7 @@ def academic_info_submit(
         sports=sports,
         music=music,
         volunteering=volunteering,
-        gpa=current_user.gpa,
+        gpa=user.gpa,
     )
 
     confirmation_message = f"""
@@ -66,7 +66,7 @@ def academic_info_submit(
     return confirmation_message, recommendation_message, gr.update(visible=False), gr.update(visible=True)
 
 def app(user_state):
-    with gr.Blocks() as recommender_app:
+    with gr.Group():
         gr.Markdown("# Student Recommendation System")
 
         with gr.Column(visible=True) as academic_info_page:
@@ -109,7 +109,3 @@ def app(user_state):
             ],
             outputs=[confirmation_display, recommendation_display, academic_info_page, recommendation_page]
         )
-    return recommender_app
-
-if __name__ == "__main__":
-    app.launch()

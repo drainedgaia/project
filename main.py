@@ -1,13 +1,11 @@
 import gradio as gr
 from src.data.database import init_db, SessionLocal
-from src.ui.login_page import show_login_page
 from src.ui.gradio_app import app as recommender_app
-from src.logic.auth import authenticate_user
+from src.logic.auth import authenticate_user, create_user
+from src.data.database import User
 
 def main():
     init_db()
-    
-    login_app = show_login_page()
     
     with gr.Blocks() as app:
         user_state = gr.State(None)
@@ -26,7 +24,7 @@ def main():
                     signup_button = gr.Button("Signup")
 
         with gr.Column(visible=False) as main_app_view:
-            recommender_app_ui = recommender_app(user_state)
+            recommender_app(user_state)
         
         def login(email, password):
             if not email or not password:
@@ -45,9 +43,6 @@ def main():
                 return None, gr.update(visible=True), gr.update(visible=False)
 
         def signup(first_name, last_name, email, password):
-            # This is a simplified signup, ideally it should be in a separate function
-            from src.logic.auth import create_user
-            from src.data.database import User
             if not all([first_name, last_name, email, password]):
                 gr.Warning("Please fill in all fields.")
                 return
