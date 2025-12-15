@@ -11,5 +11,4 @@ dependencies = [
     "joblib>=1.4.2",
     "passlib[bcrypt,bycrypt]>=1.7.4",
     "sqlalchemy>=2.0.45",
-    "bcrypt[bycrypt]>=5.0.0",
 ]
