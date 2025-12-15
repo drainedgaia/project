@@ -1,16 +1,10 @@
-from dataclasses import dataclass
-from typing import List
+from src.data.database import User
 
-@dataclass
 class Course:
-    name: str
-    grade: str
+    def __init__(self, course_id, course_name, course_description):
+        self.course_id = course_id
+        self.course_name = course_name
+        self.course_description = course_description
 
-@dataclass
-class User:
-    first_name: str
-    last_name: str
-    email: str
-    gpa: float
-    courses: List[Course]
-
+    def __str__(self):
+        return f"Course(course_id={self.course_id}, course_name={self.course_name})"
