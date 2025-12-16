@@ -1,71 +1,11 @@
 
-
 import gradio as gr
+import pandas as pd
 from src.data.database import init_db, SessionLocal
 from src.logic.auth import authenticate_user, create_user
 from src.data.models import User
 from src.utils.validation import validate_email, validate_gpa
 from src.logic.recommender import get_recommendations
-
-def academic_info_submit(
-    user, gpa_str, age, gender, ethnicity, parental_education, study_time_weekly, 
-    absences, tutoring, parental_support, extracurricular, sports, music, volunteering
-):
-    if not validate_gpa(gpa_str):
-        gr.Warning('Invalid GPA. Please enter a value between 0.0 and 4.0.')
-        return "", "", gr.update(visible=True), gr.update(visible=False)
-    
-    user.gpa = float(gpa_str)
-
-    # Convert inputs to the correct types
-    try:
-        age = int(age)
-        gender = int(gender)
-        ethnicity = int(ethnicity)
-        parental_education = int(parental_education)
-        study_time_weekly = float(study_time_weekly)
-        absences = int(absences)
-        tutoring = int(tutoring)
-        parental_support = int(parental_support)
-        extracurricular = int(extracurricular)
-        sports = int(sports)
-        music = int(music)
-        volunteering = int(volunteering)
-    except (ValueError, TypeError):
-        gr.Warning("Please ensure all fields are filled correctly.")
-        return "", "", gr.update(visible=True), gr.update(visible=False)
-
-    recommendations = get_recommendations(
-        age=age,
-        gender=gender,
-        ethnicity=ethnicity,
-        parental_education=parental_education,
-        study_time_weekly=study_time_weekly,
-        absences=absences,
-        tutoring=tutoring,
-        parental_support=parental_support,
-        extracurricular=extracurricular,
-        sports=sports,
-        music=music,
-        volunteering=volunteering,
-        gpa=user.gpa,
-    )
-
-    confirmation_message = f"""
-    **User Information:**
-    Name: {user.first_name} {user.last_name}
-    Email: {user.email}
-
-    **Academic & Personal Information:**
-    GPA: {user.gpa}
-    Age: {age}
-    Study Time Weekly: {study_time_weekly} hours
-    Absences: {absences} days
-    """
-    
-    recommendation_message = "\n**Recommended Courses:**\n" + "\n".join([f"- {rec}" for rec in recommendations])
-
-    return confirmation_message, recommendation_message, gr.update(visible=False), gr.update(visible=True)
 
 def app():
     init_db()
@@ -118,18 +58,69 @@ def app():
             with gr.Column(visible=False) as recommendation_page:
                 gr.Markdown("## 3. Recommendations")
                 confirmation_display = gr.Markdown()
-                recommendation_display = gr.Markdown()
+                estimated_grade_display = gr.Markdown()
+                recommendation_display = gr.DataFrame()
                 
-            academic_info_button.click(
-                academic_info_submit,
-                inputs=[
-                    user_state, gpa_input, age_input, gender_input, ethnicity_input, parental_education_input,
-                    study_time_weekly_input, absences_input, tutoring_input, parental_support_input,
-                    extracurricular_input, sports_input, music_input, volunteering_input
-                ],
-                outputs=[confirmation_display, recommendation_display, academic_info_page, recommendation_page]
+        def academic_info_submit(user, gpa_str, age, gender, ethnicity, parental_education, study_time_weekly, 
+            absences, tutoring, parental_support, extracurricular, sports, music, volunteering):
+            
+            if not validate_gpa(gpa_str):
+                gr.Warning('Invalid GPA. Please enter a value between 0.0 and 4.0.')
+                return gr.update(), gr.update(), gr.update(), gr.update(visible=True), gr.update(visible=False)
+            
+            user.gpa = float(gpa_str)
+
+            # Convert inputs to the correct types
+            try:
+                age = int(age)
+                gender = int(gender)
+                ethnicity = int(ethnicity)
+                parental_education = int(parental_education)
+                study_time_weekly = float(study_time_weekly)
+                absences = int(absences)
+                tutoring = int(tutoring)
+                parental_support = int(parental_support)
+                extracurricular = int(extracurricular)
+                sports = int(sports)
+                music = int(music)
+                volunteering = int(volunteering)
+            except (ValueError, TypeError):
+                gr.Warning("Please ensure all fields are filled correctly.")
+                return gr.update(), gr.update(), gr.update(), gr.update(visible=True), gr.update(visible=False)
+
+            grade_class, recommended_courses = get_recommendations(
+                age=age,
+                gender=gender,
+                ethnicity=ethnicity,
+                parental_education=parental_education,
+                study_time_weekly=study_time_weekly,
+                absences=absences,
+                tutoring=tutoring,
+                parental_support=parental_support,
+                extracurricular=extracurricular,
+                sports=sports,
+                music=music,
+                volunteering=volunteering,
+                gpa=user.gpa,
             )
-        
+
+            confirmation_message = f"""
+            **User Information:**
+            Name: {user.first_name} {user.last_name}
+            Email: {user.email}
+
+            **Academic & Personal Information:**
+            GPA: {user.gpa}
+            Age: {age}
+            Study Time Weekly: {study_time_weekly} hours
+            Absences: {absences} days
+            """
+            
+            recommendations_df = pd.DataFrame(recommended_courses)
+            estimated_grade = f"**Estimated Grade:** {grade_class}"
+
+            return gr.update(value=confirmation_message), gr.update(value=estimated_grade), gr.update(value=recommendations_df), gr.update(visible=False), gr.update(visible=True)
+
         def login(email, password):
             if not email or not password:
                 gr.Warning("Please fill in all fields.")
@@ -165,5 +156,15 @@ def app():
 
         login_button.click(login, inputs=[email_input, password_input], outputs=[user_state, login_view, main_app_view])
         signup_button.click(signup, inputs=[signup_first_name, signup_last_name, signup_email, signup_password], outputs=[])
+        
+        academic_info_button.click(
+            academic_info_submit,
+            inputs=[
+                user_state, gpa_input, age_input, gender_input, ethnicity_input, parental_education_input,
+                study_time_weekly_input, absences_input, tutoring_input, parental_support_input,
+                extracurricular_input, sports_input, music_input, volunteering_input
+            ],
+            outputs=[confirmation_display, estimated_grade_display, recommendation_display, academic_info_page, recommendation_page]
+        )
 
     return app

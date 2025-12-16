@@ -1,8 +1,25 @@
+
 import joblib
 import pandas as pd
 import numpy as np
 import os
 import random
+
+# Dummy course catalog
+COURSE_CATALOG = {
+    "Advanced Algorithms": {"code": "CS501", "hours": 3},
+    "Machine Learning": {"code": "CS502", "hours": 3},
+    "Deep Learning": {"code": "CS503", "hours": 3},
+    "Data Structures II": {"code": "CS401", "hours": 3},
+    "Database Systems": {"code": "CS402", "hours": 3},
+    "Operating Systems": {"code": "CS403", "hours": 3},
+    "Introduction to Programming II": {"code": "CS301", "hours": 3},
+    "Discrete Mathematics": {"code": "CS302", "hours": 3},
+    "Computer Architecture": {"code": "CS303", "hours": 3},
+    "Foundations of Computer Science": {"code": "CS201", "hours": 3},
+    "Web Development Basics": {"code": "CS202", "hours": 3},
+    "IT Support Fundamentals": {"code": "CS203", "hours": 3},
+}
 
 # Determine the absolute path to the models directory
 MODELS_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'models')
@@ -43,11 +60,17 @@ def get_recommendations(
         nd_courses = ["Data Structures II", "Database Systems", "Operating Systems"]
         rd_courses = ["Introduction to Programming II", "Discrete Mathematics", "Computer Architecture"]
         if gpa >= 3.5:
-            return random.sample(st_course, k=len(st_course))
+            recommended_courses = random.sample(st_course, k=len(st_course))
+            grade_class = "A"
         elif gpa >= 2.5:
-            return random.sample(nd_courses, k=len(nd_courses))
+            recommended_courses = random.sample(nd_courses, k=len(nd_courses))
+            grade_class = "B"
         else:
-            return random.sample(rd_courses, k=len(rd_courses))
+            recommended_courses = random.sample(rd_courses, k=len(rd_courses))
+            grade_class = "C"
+        
+        courses_with_details = [{"Course Name": name, "Code": COURSE_CATALOG[name]["code"], "Hours": COURSE_CATALOG[name]["hours"]} for name in recommended_courses]
+        return grade_class, courses_with_details
 
     # Create a DataFrame from the input data with columns in the correct order
     input_data = pd.DataFrame(
@@ -78,7 +101,9 @@ def get_recommendations(
 
     # Predict the GradeClass
     prediction = model.predict(input_scaled)
-    grade_class = prediction[0]
+    grade_class_index = prediction[0]
+    grade_class_map = {0: "A", 1: "B", 2: "C", 3: "D"}
+    grade_class = grade_class_map.get(grade_class_index, "N/A")
 
     # Define course recommendations for each grade class
     recommendations_map = {
@@ -89,7 +114,9 @@ def get_recommendations(
     }
 
     # Get recommendations and shuffle them
-    recommended_courses = recommendations_map.get(grade_class, ["No specific recommendations available."])
+    recommended_courses = recommendations_map.get(grade_class_index, ["No specific recommendations available."])
     random.shuffle(recommended_courses)
     
-    return recommended_courses
+    courses_with_details = [{"Name": name, "Code": COURSE_CATALOG.get(name, {}).get("code", "N/A"), "Hours": COURSE_CATALOG.get(name, {}).get("hours", "N/A")} for name in recommended_courses]
+    
+    return grade_class, courses_with_details
