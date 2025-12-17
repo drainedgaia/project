@@ -38,4 +38,5 @@ if "authenticated" in st.session_state and st.session_state.authenticated:
     show_results_page()
 else:
     st.warning("You must be logged in to view results.")
-    st.page_link("pages/1_Login.py", label="Go to Login")
+    st.page_link("app.py", label="Go to Login")
+    st.stop()

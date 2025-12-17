@@ -81,11 +81,12 @@ def show_recommender_page():
                     }
                 }
                 st.toast("Recommendations generated successfully!", icon="✅")
-                st.info("Navigate to the Results page to view your recommendations.")
+                st.switch_page("pages/3_Results.py")
 
 
 if "authenticated" in st.session_state and st.session_state.authenticated:
     show_recommender_page()
 else:
     st.warning("You must be logged in to access the recommender.")
-    st.page_link("pages/1_Login.py", label="Go to Login")
+    st.page_link("app.py", label="Go to Login")
+    st.stop()
