@@ -1,10 +1,12 @@
-from src.data.database import User
+from sqlalchemy import Column, Integer, String, Float
+from .database import Base
 
-class Course:
-    def __init__(self, course_id, course_name, course_description):
-        self.course_id = course_id
-        self.course_name = course_name
-        self.course_description = course_description
+class User(Base):
+    __tablename__ = "users"
 
-    def __str__(self):
-        return f"Course(course_id={self.course_id}, course_name={self.course_name})"
+    id = Column(Integer, primary_key=True, index=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    email = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    gpa = Column(Float, nullable=True)

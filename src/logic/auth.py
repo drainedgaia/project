@@ -1,6 +1,6 @@
 import bcrypt
 from sqlalchemy.orm import Session
-from src.data.database import User, get_db
+from src.data.models import User
 
 def get_password_hash(password):
     pwd_bytes = password.encode('utf-8')
