@@ -23,9 +23,8 @@ st.set_page_config(
 
 def show_login_page():
     """
-    Displays the login and signup page.
+    Displays the login and signup page with improved aesthetics.
     """
-    # Hide sidebar
     st.markdown("""
         <style>
             [data-testid="stSidebar"] {
@@ -34,60 +33,90 @@ def show_login_page():
         </style>
     """, unsafe_allow_html=True)
 
-    st.title("Login or Signup")
+    _, col2, _ = st.columns([1, 2, 1])
 
-    login_tab, signup_tab = st.tabs(["Login", "Signup"])
+    with col2:
+        st.title("🎓 Student Recommendation System")
+        st.markdown("Log in or create an account to receive personalized recommendations.")
+        st.write("")
 
-    with login_tab:
-        with st.form("login_form"):
-            email = st.text_input("Email")
-            password = st.text_input("Password", type="password")
-            submitted = st.form_submit_button("Login")
+        login_tab, signup_tab = st.tabs(["Login", "Signup"])
 
-            if submitted:
-                if not email or not password:
-                    st.toast("Please fill in all fields.", icon="⚠️")
-                else:
-                    db = SessionLocal()
-                    user = authenticate_user(db, email, password)
-                    db.close()
-                    if user:
-                        st.session_state.authenticated = True
-                        st.session_state.user = user
-                        st.toast("Login successful!", icon="✅")
-                        st.rerun()
+        with login_tab:
+            with st.form("login_form"):
+                email = st.text_input("Email", placeholder="your@email.com")
+                password = st.text_input("Password", type="password", placeholder="••••••••")
+                st.write("")
+                submitted = st.form_submit_button("Login", use_container_width=True, type="primary")
+
+                if submitted:
+                    if not email or not password:
+                        st.toast("Please fill in all fields.", icon="⚠️")
                     else:
-                        st.toast("Invalid email or password.", icon="❌")
-
-    with signup_tab:
-        with st.form("signup_form"):
-            first_name = st.text_input("First Name")
-            last_name = st.text_input("Last Name")
-            email = st.text_input("Email")
-            password = st.text_input("Password", type="password")
-            submitted = st.form_submit_button("Signup")
-
-            if submitted:
-                if not all([first_name, last_name, email, password]):
-                    st.toast("Please fill in all fields.", icon="⚠️")
-                else:
-                    db = SessionLocal()
-                    user_exists = db.query(User).filter(User.email == email).first()
-                    if user_exists:
-                        st.toast("User with this email already exists.", icon="❌")
+                        db = SessionLocal()
+                        user = authenticate_user(db, email, password)
                         db.close()
+                        if user:
+                            st.session_state.authenticated = True
+                            st.session_state.user = user
+                            st.toast("Login successful!", icon="✅")
+                            st.rerun()
+                        else:
+                            st.toast("Invalid email or password.", icon="❌")
+
+        with signup_tab:
+            with st.form("signup_form"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    first_name = st.text_input("First Name", placeholder="John")
+                with col2:
+                    last_name = st.text_input("Last Name", placeholder="Doe")
+                
+                email = st.text_input("Email", placeholder="your@email.com")
+                password = st.text_input("Password", type="password", placeholder="••••••••")
+                st.write("")
+                submitted = st.form_submit_button("Signup", use_container_width=True, type="primary")
+
+                if submitted:
+                    if not all([first_name, last_name, email, password]):
+                        st.toast("Please fill in all fields.", icon="⚠️")
                     else:
-                        create_user(db, first_name, last_name, email, password)
-                        db.close()
-                        st.toast("Signup successful! You can now log in.", icon="✅")
+                        db = SessionLocal()
+                        user_exists = db.query(User).filter(User.email == email).first()
+                        if user_exists:
+                            st.toast("User with this email already exists.", icon="❌")
+                            db.close()
+                        else:
+                            create_user(db, first_name, last_name, email, password)
+                            db.close()
+                            st.toast("Signup successful! You can now log in.", icon="✅")
 
 def show_dashboard_page():
     """
-    Displays the main dashboard for logged-in users.
+    Displays the main dashboard for logged-in users with improved aesthetics.
     """
-    st.title("🎓 Student Recommendation System")
     st.sidebar.success(f"Logged in as {st.session_state.user.first_name}")
-    st.markdown("Welcome back! Navigate to the Recommender page to get started.")
+    
+    st.title("🎓 Dashboard")
+    st.markdown(f"### Welcome back, {st.session_state.user.first_name}! 👋")
+    st.markdown("You're logged in and ready to explore. Use the options below to get started.")
+    st.write("")
+
+    _, col2, _ = st.columns([0.5, 3, 0.5])
+    with col2:
+        with st.container(border=True):
+            st.subheader("📝 Get New Recommendations")
+            st.markdown("Fill out the form with your academic and personal information to receive a new set of tailored recommendations.")
+            if st.button("Go to Recommender", type="primary", use_container_width=True):
+                st.switch_page("pages/2_Recommender.py")
+
+        st.write("")
+
+        with st.container(border=True):
+            st.subheader("📊 View Latest Results")
+            st.markdown("View the most recent recommendations you have generated. If you haven't generated any yet, this page will be empty.")
+            if st.button("Go to Results", use_container_width=True):
+                st.switch_page("pages/3_Results.py")
 
 
 def main():
