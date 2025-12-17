@@ -3,6 +3,8 @@ from src.data.database import SessionLocal
 from src.data.models import User
 import time
 
+st.set_page_config(page_title="Settings", page_icon="⚙️")
+
 def show_settings_page():
     """
     Displays the settings page for logged-in users.

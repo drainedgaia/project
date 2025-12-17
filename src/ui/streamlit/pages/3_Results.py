@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 
+st.set_page_config(page_title="Results", page_icon="📊")
+
 def show_results_page():
     """
     Displays the recommendation results to the user.

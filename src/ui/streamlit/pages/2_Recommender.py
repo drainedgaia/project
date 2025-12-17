@@ -3,6 +3,8 @@ import pandas as pd
 from src.logic.recommender import get_recommendations
 from src.utils.validation import validate_gpa
 
+st.set_page_config(page_title="Recommender", page_icon="📝")
+
 def show_recommender_page():
     """
     Displays the recommender form for logged-in users.
