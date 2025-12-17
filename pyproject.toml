@@ -11,4 +11,5 @@ dependencies = [
     "joblib>=1.4.2",
     "passlib[bcrypt,bycrypt]>=1.7.4",
     "sqlalchemy>=2.0.45",
+    "streamlit>=1.52.1",
 ]
