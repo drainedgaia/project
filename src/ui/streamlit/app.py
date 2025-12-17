@@ -1,6 +1,7 @@
 import streamlit as st
 import sys
 import os
+import time # Added for time.sleep()
 
 # Add the project root to the Python path to allow for absolute imports
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
@@ -105,8 +106,41 @@ def show_dashboard_page():
     """
     Displays the main dashboard for logged-in users with improved aesthetics.
     """
-    st.sidebar.success(f"Logged in as {st.session_state.user.first_name}")
-    
+    # Inject CSS for sidebar bottom positioning
+    st.markdown("""
+        <style>
+            /* Make the sidebar content a flex container */
+            [data-testid="stSidebarContent"] {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+            /* Push the last element (our logout button) to the bottom */
+            .sidebar-logout-button {
+                margin-top: auto;
+                padding-top: 1rem; /* Add some padding above the button */
+                border-top: 1px solid var(--border-color);
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+    with st.sidebar:
+        st.success(f"Logged in as {st.session_state.user.first_name}")
+        # The navigation links are automatically added by Streamlit's multipage app feature.
+        # They will appear above our custom button due to flex-direction: column and margin-top: auto.
+
+        # Logout button at the bottom of the sidebar
+        st.markdown('<div class="sidebar-logout-button">', unsafe_allow_html=True)
+        if st.button("Logout", key="sidebar_logout_button", type="secondary", use_container_width=True):
+            st.session_state.authenticated = False
+            st.session_state.user = None
+            st.session_state.recommendations = None
+            st.toast("You have been logged out.", icon="👋")
+            time.sleep(1)
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # Main content of the dashboard
     st.title("🎓 Dashboard")
     st.markdown(f"### Welcome back, {st.session_state.user.first_name}! 👋")
     st.markdown("You're logged in and ready to explore. Use the options below to get started.")
