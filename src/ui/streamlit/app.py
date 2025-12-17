@@ -30,6 +30,16 @@ def show_login_page():
             [data-testid="stSidebar"] {
                 display: none;
             }
+            /* Hide the Streamlit footer text */
+            [data-testid="stSidebar"] > div:last-child {
+                visibility: hidden;
+                height: 0%;
+                position: fixed;
+            }
+            /* Optional: Adjust the main content margin if needed */
+            [data-testid="stAppViewBlockContainer"] {
+                padding-top: 1rem;
+            }
         </style>
     """, unsafe_allow_html=True)
 
