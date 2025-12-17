@@ -25,17 +25,47 @@ def show_recommender_page():
         
         cols2 = st.columns(2)
         with cols2[0]:
-            parental_education_input = st.radio("Parental Education", [("None", 0), ("High School", 1), ("Some College", 2), ("Bachelor's", 3), ("Higher", 4)], index=2)
+            education_options = {0: "None", 1: "High School", 2: "Some College", 3: "Bachelor's", 4: "Higher"}
+            parental_education_input = st.radio(
+                "Parental Education",
+                options=education_options.keys(),
+                format_func=lambda x: education_options[x],
+                index=2
+            )
         with cols2[1]:
-            parental_support_input = st.radio("Parental Support", [("None", 0), ("Low", 1), ("Moderate", 2), ("High", 3), ("Very High", 4)], index=2)
+            support_options = {0: "None", 1: "Low", 2: "Moderate", 3: "High", 4: "Very High"}
+            parental_support_input = st.radio(
+                "Parental Support",
+                options=support_options.keys(),
+                format_func=lambda x: support_options[x],
+                index=2
+            )
 
         cols3 = st.columns(3)
         with cols3[0]:
-            gender_input = st.radio("Gender", [("Female", 0), ("Male", 1)], index=0)
+            gender_options = {0: "Female", 1: "Male"}
+            gender_input = st.radio(
+                "Gender",
+                options=gender_options.keys(),
+                format_func=lambda x: gender_options[x],
+                index=0
+            )
         with cols3[1]:
-            ethnicity_input = st.radio("Ethnicity", [("Caucasian", 0), ("African American", 1), ("Asian", 2), ("Other", 3)], index=0)
+            ethnicity_options = {0: "Caucasian", 1: "African American", 2: "Asian", 3: "Other"}
+            ethnicity_input = st.radio(
+                "Ethnicity",
+                options=ethnicity_options.keys(),
+                format_func=lambda x: ethnicity_options[x],
+                index=0
+            )
         with cols3[2]:
-            tutoring_input = st.radio("Tutoring", [("No", 0), ("Yes", 1)], index=0)
+            tutoring_options = {0: "No", 1: "Yes"}
+            tutoring_input = st.radio(
+                "Tutoring",
+                options=tutoring_options.keys(),
+                format_func=lambda x: tutoring_options[x],
+                index=0
+            )
 
         st.markdown("### Activities")
         cols4 = st.columns(4)
