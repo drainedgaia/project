@@ -46,9 +46,18 @@ project/
 
 ## UI
 
-*Student Info Forum*
-![User Information Page](./assets/student-info.png)
-*Forum for User academic performance*
-![System Architecture](./assets/academic-info.png)
-*Respective Recommenations list*
-![System Architecture](./assets/recommendations.png)
+| Login Page | Signup Page |
+| :---: | :---: |
+| ![Login Page](./assets/login.png) | ![Signup Page](./assets/signup.png) |
+
+| Form Page | Dashboard Page |
+| :---: | :---: |
+| ![Form Page](./assets/form.png) | ![Dashboard Page](./assets/dashboard.png) |
+
+| Recommendations Page | Settings Page |
+| :---: | :---: |
+| ![Recommendations Page](./assets/recommendations.png) | ![Settings Page](./assets/settings.png) |
+
+| About Page | FAQ Page |
+| :---: | :---: |
+| ![About Page](./assets/about.png) | ![FAQ Page](./assets/FAQ.png) |
