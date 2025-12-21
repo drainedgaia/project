@@ -79,9 +79,9 @@ def show_login_page():
             with st.form("signup_form"):
                 col1, col2 = st.columns(2)
                 with col1:
-                    first_name = st.text_input("First Name", placeholder="John")
+                    first_name = st.text_input("First Name", placeholder="Mostafa")
                 with col2:
-                    last_name = st.text_input("Last Name", placeholder="Doe")
+                    last_name = st.text_input("Last Name", placeholder="Mahmoud")
                 
                 email = st.text_input("Email", placeholder="your@email.com")
                 password = st.text_input("Password", type="password", placeholder="••••••••")
