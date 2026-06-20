@@ -1,24 +1,38 @@
-
 import joblib
 import pandas as pd
 import numpy as np
 import os
 import random
 
-# Dummy course catalog
+# Expanded course catalog to allow for more suggestions
 COURSE_CATALOG = {
+    # Tier A
     "Advanced Algorithms": {"code": "CS501", "hours": 3},
     "Machine Learning": {"code": "CS502", "hours": 3},
     "Deep Learning": {"code": "CS503", "hours": 3},
+    "Cloud Computing Architecture": {"code": "CS504", "hours": 3},
+    "Natural Language Processing": {"code": "CS505", "hours": 3},
+    
+    # Tier B
     "Data Structures II": {"code": "CS401", "hours": 3},
     "Database Systems": {"code": "CS402", "hours": 3},
     "Operating Systems": {"code": "CS403", "hours": 3},
+    "Software Engineering": {"code": "CS404", "hours": 3},
+    "Computer Networks": {"code": "CS405", "hours": 3},
+    
+    # Tier C
     "Introduction to Programming II": {"code": "CS301", "hours": 3},
     "Discrete Mathematics": {"code": "CS302", "hours": 3},
     "Computer Architecture": {"code": "CS303", "hours": 3},
+    "Human-Computer Interaction": {"code": "CS304", "hours": 3},
+    "Systems Analysis": {"code": "CS305", "hours": 3},
+    
+    # Tier D
     "Foundations of Computer Science": {"code": "CS201", "hours": 3},
     "Web Development Basics": {"code": "CS202", "hours": 3},
     "IT Support Fundamentals": {"code": "CS203", "hours": 3},
+    "Introduction to Databases": {"code": "CS204", "hours": 3},
+    "Digital Literacy": {"code": "CS205", "hours": 3},
 }
 
 # Determine the absolute path to the models directory
@@ -52,21 +66,25 @@ def get_recommendations(
     gpa: float,
 ):
     """
-    Recommends courses based on student data using a trained model.
+    Recommends 5 courses based on student data using a trained model.
     """
+    # Define how many recommendations to show at once
+    NUM_SUGGESTIONS = 6
+
     if model is None or scaler is None or feature_columns is None:
-        # Fallback logic if the model is not loaded
-        st_course = ["Advanced Algorithms", "Machine Learning", "Deep Learning"]
-        nd_courses = ["Data Structures II", "Database Systems", "Operating Systems"]
-        rd_courses = ["Introduction to Programming II", "Discrete Mathematics", "Computer Architecture"]
+        # Fallback logic with expanded course pools
+        st_course = ["Advanced Algorithms", "Machine Learning", "Deep Learning", "Cloud Computing Architecture", "Natural Language Processing"]
+        nd_courses = ["Data Structures II", "Database Systems", "Operating Systems", "Software Engineering", "Computer Networks"]
+        rd_courses = ["Introduction to Programming II", "Discrete Mathematics", "Computer Architecture", "Human-Computer Interaction", "Systems Analysis"]
+        
         if gpa >= 3.5:
-            recommended_courses = random.sample(st_course, k=len(st_course))
+            recommended_courses = random.sample(st_course, k=min(NUM_SUGGESTIONS, len(st_course)))
             grade_class = "A"
         elif gpa >= 2.5:
-            recommended_courses = random.sample(nd_courses, k=len(nd_courses))
+            recommended_courses = random.sample(nd_courses, k=min(NUM_SUGGESTIONS, len(nd_courses)))
             grade_class = "B"
         else:
-            recommended_courses = random.sample(rd_courses, k=len(rd_courses))
+            recommended_courses = random.sample(rd_courses, k=min(NUM_SUGGESTIONS, len(rd_courses)))
             grade_class = "C"
         
         courses_with_details = [{"Course Name": name, "Code": COURSE_CATALOG[name]["code"], "Hours": COURSE_CATALOG[name]["hours"]} for name in recommended_courses]
@@ -105,17 +123,22 @@ def get_recommendations(
     grade_class_map = {0: "A", 1: "B", 2: "C", 3: "D"}
     grade_class = grade_class_map.get(grade_class_index, "N/A")
 
-    # Define course recommendations for each grade class
+    # Define expanded course recommendations for each grade class
     recommendations_map = {
-        0: ["Advanced Algorithms", "Machine Learning", "Deep Learning"],
-        1: ["Data Structures II", "Database Systems", "Operating Systems"],
-        2: ["Introduction to Programming II", "Discrete Mathematics", "Computer Architecture"],
-        3: ["Foundations of Computer Science", "Web Development Basics", "IT Support Fundamentals"],
+        0: ["Advanced Algorithms", "Machine Learning", "Deep Learning", "Cloud Computing Architecture", "Natural Language Processing"],
+        1: ["Data Structures II", "Database Systems", "Operating Systems", "Software Engineering", "Computer Networks"],
+        2: ["Introduction to Programming II", "Discrete Mathematics", "Computer Architecture", "Human-Computer Interaction", "Systems Analysis"],
+        3: ["Foundations of Computer Science", "Web Development Basics", "IT Support Fundamentals", "Introduction to Databases", "Digital Literacy"],
     }
 
-    # Get recommendations and shuffle them
-    recommended_courses = recommendations_map.get(grade_class_index, ["No specific recommendations available."])
-    random.shuffle(recommended_courses)
+    # Get recommendations and safely sample them
+    pool = recommendations_map.get(grade_class_index, ["No specific recommendations available."])
+    
+    if pool[0] == "No specific recommendations available.":
+        recommended_courses = pool
+    else:
+        # Sample the exact amount requested, protecting against index errors if the pool is too small
+        recommended_courses = random.sample(pool, k=min(NUM_SUGGESTIONS, len(pool)))
     
     courses_with_details = [{"Name": name, "Code": COURSE_CATALOG.get(name, {}).get("code", "N/A"), "Hours": COURSE_CATALOG.get(name, {}).get("hours", "N/A")} for name in recommended_courses]
     
